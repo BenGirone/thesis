@@ -61,6 +61,5 @@ class Lane {
 		for (Car car : this.cars) {
 			car.render();
 		}
-		;
 	}
 }

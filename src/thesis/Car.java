@@ -1,5 +1,13 @@
 package thesis;
 
+/*
+ * Car Facts:
+ * 	Avg Length - 15 feet
+ * 	Avg Width - 5.5 feet
+ * Road Facts:
+ * 	Avg Width - 12 feet
+ * 
+ */
 abstract class Car {
 	public float x;
 	public float y;
@@ -24,7 +32,7 @@ class CarNorth extends Car {
 	}
 
 	public void move() {
-		this.y -= 15;
+		this.y -= 5;
 	}
 
 	public boolean offScreen() {
@@ -48,7 +56,7 @@ class CarSouth extends Car {
 	}
 
 	public void move() {
-		this.y += 15;
+		this.y += 5;
 	}
 
 	public boolean offScreen() {
@@ -72,7 +80,7 @@ class CarEast extends Car {
 	}
 
 	public void move() {
-		this.x += 15;
+		this.x += 5;
 	}
 
 	public boolean offScreen() {
@@ -96,7 +104,7 @@ class CarWest extends Car {
 	}
 
 	public void move() {
-		this.x -= 15;
+		this.x -= 5;
 	}
 
 	public boolean offScreen() {
