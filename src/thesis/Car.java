@@ -1,5 +1,9 @@
 package thesis;
 
+import java.util.Comparator;
+import processing.core.PApplet;
+import processing.core.PVector;
+
 /*
  * Car Facts:
  * 	Avg Length - 15 feet
@@ -8,115 +12,63 @@ package thesis;
  * 	Avg Width - 12 feet
  * 
  */
-abstract class Car {
-	public float x;
-	public float y;
+class Car implements AnimatedObject {
+	public static float carWidth = Globals.pixelsPerFoot * 6.0f;
+	public static float carLength = Globals.pixelsPerFoot * 15.5f;
+	public Lane lane;
+	
+	public PVector position;
+	public PVector velocity;
+	public PVector acceleration = new PVector(0,0);
+	public float r;
+	public float maxforce;    // Maximum steering force
+	public float maxspeed;    // Maximum speed
+	public float distanceTraveled = 0;
+	
+	Car(Lane lane) {
+		this.lane = lane;
+		this.position = lane.startPos.copy().sub(lane.directionVector.copy().mult(carLength));
+		this.velocity = lane.directionVector.copy().mult(lane.speedLimit);
+	}
 
 	public void simulate() {
 		this.move();
 	}
 
-	public abstract void move();
-
-	public abstract boolean offScreen();
-
-	public abstract boolean clearFromStart();
-
-	public abstract void render();
-}
-
-class CarNorth extends Car {
-	CarNorth() {
-		this.x = Globals.globalWidth * 0.55f;
-		this.y = Globals.globalWidth + Globals.globalWidth * 0.05f;
-	}
-
 	public void move() {
-		this.y -= 5;
+		velocity.add(acceleration);
+		position.add(velocity);
+		distanceTraveled += Math.abs(velocity.dot(lane.directionVector));
 	}
 
-	public boolean offScreen() {
-		return this.y < (-1 * Globals.globalHeight * 0.05f);
+	public boolean isBeyondIntersection() {
+		return position.dist(lane.startPos) >= lane.length;
 	}
 
-	public boolean clearFromStart() {
-		return this.y < (Globals.globalHeight - Globals.globalHeight * 0.15f);
+	public boolean isClearFromStart() {
+		return distanceTraveled >= (4*carLength);
 	}
 
 	public void render() {
+		Globals.canvas.rectMode(PApplet.CENTER);
+		Globals.canvas.pushMatrix();
+		Globals.canvas.translate(this.position.x, this.position.y);
+		Globals.canvas.rotate(velocity.heading() + PApplet.HALF_PI);
 		Globals.canvas.fill(219, 29, 29);
-		Globals.canvas.rect(this.x, this.y, Globals.globalWidth * 0.03f, Globals.globalWidth * 0.05f);
+		Globals.canvas.rect(0, 0, carWidth, carLength);
+		Globals.canvas.popMatrix();
 	}
 }
 
-class CarSouth extends Car {
-	CarSouth() {
-		this.x = (Globals.globalWidth * 0.45f);
-		this.y = (0 - Globals.globalWidth * 0.05f);
-	}
+class CarComparator implements Comparator<Car> {
 
-	public void move() {
-		this.y += 5;
+	@Override
+	public int compare(Car car1, Car car2) {
+		if (car1.position.dist(car1.lane.endPos) < car2.position.dist(car2.lane.endPos)) {
+			return -1;
+		} else {
+			return 1;
+		}
 	}
-
-	public boolean offScreen() {
-		return this.y > (Globals.globalHeight + Globals.globalHeight * 0.05f);
-	}
-
-	public boolean clearFromStart() {
-		return this.y > (Globals.globalHeight * 0.15f);
-	}
-
-	public void render() {
-		Globals.canvas.fill(219, 29, 29);
-		Globals.canvas.rect(this.x, this.y, Globals.globalWidth * 0.03f, Globals.globalWidth * 0.05f);
-	}
-}
-
-class CarEast extends Car {
-	CarEast() {
-		this.x = (0 - Globals.globalWidth * 0.05f);
-		this.y = (Globals.globalWidth * 0.55f);
-	}
-
-	public void move() {
-		this.x += 5;
-	}
-
-	public boolean offScreen() {
-		return this.x > (Globals.globalWidth + Globals.globalWidth * 0.05f);
-	}
-
-	public boolean clearFromStart() {
-		return this.x > (Globals.globalWidth * 0.15f);
-	}
-
-	public void render() {
-		Globals.canvas.fill(219, 29, 29);
-		Globals.canvas.rect(this.x, this.y, Globals.globalWidth * 0.05f, Globals.globalWidth * 0.03f);
-	}
-}
-
-class CarWest extends Car {
-	CarWest() {
-		this.x = (Globals.globalWidth + Globals.globalWidth * 0.05f);
-		this.y = (Globals.globalWidth * 0.45f);
-	}
-
-	public void move() {
-		this.x -= 5;
-	}
-
-	public boolean offScreen() {
-		return this.x < (-1 * Globals.globalWidth * 0.05);
-	}
-
-	public boolean clearFromStart() {
-		return this.x < (Globals.globalWidth - Globals.globalWidth * 0.15);
-	}
-
-	public void render() {
-		Globals.canvas.fill(219, 29, 29);
-		Globals.canvas.rect(this.x, this.y, Globals.globalWidth * 0.05f, Globals.globalWidth * 0.03f);
-	}
+	
 }
