@@ -21,8 +21,8 @@ class Car implements AnimatedObject {
 	public PVector velocity;
 	public PVector acceleration = new PVector(0,0);
 	public float r;
-	public float maxforce;    // Maximum steering force
-	public float maxspeed;    // Maximum speed
+	public float maxforce = 10.0f;    // Maximum steering force
+	public float maxspeed = 35.0f;    // Maximum speed
 	public float distanceTraveled = 0;
 	
 	Car(Lane lane) {
@@ -36,6 +36,10 @@ class Car implements AnimatedObject {
 	}
 
 	public void move() {
+		if (distanceTraveled >= lane.length/2.0f) {
+			position.add(seek(PVector.add(position, lane.directionVector.copy().rotate(PApplet.HALF_PI).mult(lane.length/2.0f))));
+		}
+		
 		velocity.add(acceleration);
 		position.add(velocity);
 		distanceTraveled += Math.abs(velocity.dot(lane.directionVector));
@@ -48,12 +52,30 @@ class Car implements AnimatedObject {
 	public boolean isClearFromStart() {
 		return distanceTraveled >= (4*carLength);
 	}
+	
+	// A method that calculates and applies a steering force towards a target
+	// STEER = DESIRED MINUS VELOCITY
+	public PVector seek(PVector target) {
+		PVector desired = PVector.sub(target, position);  // A vector pointing from the position to the target
+		// Scale to maximum speed
+		desired.normalize();
+		desired.mult(maxspeed);
+		
+		// Above two lines of code below could be condensed with new PVector setMag() method
+		// Not using this method until Processing.js catches up
+		// desired.setMag(maxspeed);
+		
+		// Steering = Desired minus Velocity
+		PVector steer = PVector.sub(desired, velocity);
+		steer.limit(maxforce);  // Limit to maximum steering force
+		return steer;
+	}
 
 	public void render() {
 		Globals.canvas.rectMode(PApplet.CENTER);
 		Globals.canvas.pushMatrix();
 		Globals.canvas.translate(this.position.x, this.position.y);
-		Globals.canvas.rotate(velocity.heading() + PApplet.HALF_PI);
+		Globals.canvas.rotate(PVector.add(velocity, seek(PVector.add(position, lane.directionVector.copy().rotate(PApplet.HALF_PI).mult(lane.length/2.0f)))     ).heading() + PApplet.HALF_PI);
 		Globals.canvas.fill(219, 29, 29);
 		Globals.canvas.rect(0, 0, carWidth, carLength);
 		Globals.canvas.popMatrix();

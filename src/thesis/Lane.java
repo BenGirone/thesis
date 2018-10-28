@@ -97,7 +97,7 @@ class Lane implements AnimatedObject {
 		}
 		
 		if (cars.peek().isBeyondIntersection()) {
-			System.out.println("removing car");
+			//System.out.println("removing car");
 			this.removeCar();
 		}
 	}
