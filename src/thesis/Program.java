@@ -27,7 +27,7 @@ public class Program extends PApplet {
 		intersection.render();
 		intersection.simulate();
 		
-		text(String.format("X: %d\nY: %d", mouseX, mouseY), mouseX, mouseY);
+		text(String.format("X: %d\nY: %d\nt: %d", mouseX, mouseY, Time.current()), mouseX, mouseY);
 		
 		fill(255, 255, 255);
 		noStroke();

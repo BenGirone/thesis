@@ -30,6 +30,7 @@ class Lane implements AnimatedObject {
 	public PVector directionVector;
 	public PVector endPos;
 	public Intersection parentIntersection;
+	public PVector intersectionEntrance;
 	
 	private StaticLine line1;
 	private StaticLine line2;
@@ -117,6 +118,6 @@ class Lane implements AnimatedObject {
 			car.render();
 		}
 		
-		Globals.canvas.text(direction, position.x, position.y);
+		//Globals.canvas.text(direction, position.x, position.y);
 	}
 }

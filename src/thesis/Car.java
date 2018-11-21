@@ -25,10 +25,16 @@ class Car implements AnimatedObject {
 	public float maxspeed = 35.0f;    // Maximum speed
 	public float distanceTraveled = 0;
 	
+	long timeIn;
+	long timeOut;
+	
 	Car(Lane lane) {
 		this.lane = lane;
 		this.position = lane.startPos.copy().sub(lane.directionVector.copy().mult(carLength));
 		this.velocity = lane.directionVector.copy().mult(lane.speedLimit);
+		this.timeIn = Physics.arrivalTime((((lane.length)/2.0f - lane.parentIntersection.reservationMatrix.size/2.0f) + carLength) - this.distanceTraveled, PVector.dot(velocity, lane.directionVector));
+		this.timeOut = (timeIn + Physics.timeToTravelDistance(lane.parentIntersection.reservationMatrix.size, PVector.dot(velocity, lane.directionVector))) % 600000;
+		this.makeReservation();	
 	}
 
 	public void simulate() {
@@ -36,10 +42,6 @@ class Car implements AnimatedObject {
 	}
 
 	public void move() {
-		if (distanceTraveled >= lane.length/2.0f) {
-			position.add(seek(PVector.add(position, lane.directionVector.copy().rotate(PApplet.HALF_PI).mult(lane.length/2.0f))));
-		}
-		
 		velocity.add(acceleration);
 		position.add(velocity);
 		distanceTraveled += Math.abs(velocity.dot(lane.directionVector));
@@ -53,32 +55,23 @@ class Car implements AnimatedObject {
 		return distanceTraveled >= (4*carLength);
 	}
 	
-	// A method that calculates and applies a steering force towards a target
-	// STEER = DESIRED MINUS VELOCITY
-	public PVector seek(PVector target) {
-		PVector desired = PVector.sub(target, position);  // A vector pointing from the position to the target
-		// Scale to maximum speed
-		desired.normalize();
-		desired.mult(maxspeed);
-		
-		// Above two lines of code below could be condensed with new PVector setMag() method
-		// Not using this method until Processing.js catches up
-		// desired.setMag(maxspeed);
-		
-		// Steering = Desired minus Velocity
-		PVector steer = PVector.sub(desired, velocity);
-		steer.limit(maxforce);  // Limit to maximum steering force
-		return steer;
-	}
-
 	public void render() {
 		Globals.canvas.rectMode(PApplet.CENTER);
 		Globals.canvas.pushMatrix();
 		Globals.canvas.translate(this.position.x, this.position.y);
-		Globals.canvas.rotate(PVector.add(velocity, seek(PVector.add(position, lane.directionVector.copy().rotate(PApplet.HALF_PI).mult(lane.length/2.0f)))     ).heading() + PApplet.HALF_PI);
+		Globals.canvas.rotate(velocity.heading() + PApplet.HALF_PI);
 		Globals.canvas.fill(219, 29, 29);
+		if (Time.current() >= timeIn)
+			Globals.canvas.fill(255);
+		if (Time.current() >= timeOut)
+			Globals.canvas.fill(219, 29, 29);
 		Globals.canvas.rect(0, 0, carWidth, carLength);
 		Globals.canvas.popMatrix();
+	}
+	
+	public void makeReservation() {
+		float timeIn = Physics.arrivalTime((((lane.length)/2.0f - 5.0f*Lane.laneWidth) + carLength) - this.distanceTraveled, PVector.dot(velocity, lane.directionVector));
+		float timeOut = timeIn + Physics.arrivalTime(10.0f*Lane.laneWidth, PVector.dot(velocity, lane.directionVector)) % 600000;
 	}
 }
 

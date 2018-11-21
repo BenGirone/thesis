@@ -1,5 +1,8 @@
 package thesis;
 
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
 
 import processing.core.PApplet;
@@ -8,22 +11,31 @@ import processing.core.PVector;
 public class ReservationMatrix implements AnimatedObject {
 
 	private PVector position;
-	private float size;
-	private Vector<Vector<Integer>> spaceTable;
+	public float size;
+	private Vector<Vector<PVector>> spaceTable;
+	public static Map<String, ArrayList<Integer>> spaceTimeTable;
 
 	public ReservationMatrix(Intersection intersection) {
 		this.position = intersection.position;
 		this.size = Lane.laneWidth*10.0f;
+		spaceTimeTable = new Hashtable<String, ArrayList<Integer>>();
 		
-		this.spaceTable = new Vector<Vector<Integer>>();
-		Vector<Integer> currentRow;
+		this.spaceTable = new Vector<Vector<PVector>>();
+		Vector<PVector> currentRow;
 		for (float i = (position.x - (size/2.0f - Globals.pixelsPerFoot*2.5f)); i < position.x + this.size/2.0f; i+=Globals.pixelsPerFoot*5) {
-			currentRow = new Vector<Integer>();
-			spaceTable.addElement(currentRow);
+			currentRow = new Vector<PVector>();
 			for (float j = (position.y - (size/2.0f - Globals.pixelsPerFoot*2.5f)); j < position.y + this.size/2.0f; j+=Globals.pixelsPerFoot*5) {
-				currentRow.addElement(0);
+				currentRow.addElement(new PVector(i, j));
+				spaceTimeTable.put(currentRow.lastElement().toString(), new ArrayList<Integer>());
 			}
+			spaceTable.addElement(currentRow);
 		}
+	}
+	
+	public boolean reserve(PVector position, long time) {
+		time = time/100;
+		
+		return false;
 	}
 
 	@Override
@@ -32,9 +44,9 @@ public class ReservationMatrix implements AnimatedObject {
 		Globals.canvas.stroke(255);
 		Globals.canvas.noFill();
 		Globals.canvas.rect(this.position.x, this.position.y, this.size, this.size);
-		for (float i = (position.x - (size/2.0f - Globals.pixelsPerFoot*2.5f)); i < position.x + this.size/2.0f; i+=Globals.pixelsPerFoot*5) {
-			for (float j = (position.y - (size/2.0f - Globals.pixelsPerFoot*2.5f)); j < position.y + this.size/2.0f; j+=Globals.pixelsPerFoot*5) {
-				Globals.canvas.rect(i, j, Globals.pixelsPerFoot*5, Globals.pixelsPerFoot*5);
+		for (int i = 0; i < spaceTable.size(); i++) {
+			for (int j = 0; j < spaceTable.get(i).size(); j++) {
+				Globals.canvas.rect(spaceTable.get(i).get(j).x, spaceTable.get(i).get(j).y, Globals.pixelsPerFoot*5, Globals.pixelsPerFoot*5);
 			}
 		}
 	}
