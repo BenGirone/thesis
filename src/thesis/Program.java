@@ -18,7 +18,7 @@ public class Program extends PApplet {
 	public void setup() {
 		rectMode(CENTER);
 		Globals.canvas = this;
-		frameRate(30);
+		frameRate(Globals.framerate);
 	}
 
 	public void draw() {

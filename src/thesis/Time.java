@@ -3,7 +3,7 @@ package thesis;
 public class Time {
 	
 	public static long current() {
-		return System.currentTimeMillis() % 600000;
+		return System.currentTimeMillis();
 	}
 	
 	public Time() {

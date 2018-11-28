@@ -6,7 +6,10 @@ import processing.core.PVector;
 public class TestProgram extends PApplet {
 	
 	public static void main(String[] args) {
-		System.out.println((long)12345/(long)100);
+		PVector pos = new PVector(0, 0);
+		PVector v = new PVector(Physics.calcSpeed(10.0f), 0);
+		
+		System.out.println(Physics.positionAtTime(pos, v, (Time.current() + (1000 * 10))).toString());
 		PApplet.main("thesis.TestProgram");
 	}
 	

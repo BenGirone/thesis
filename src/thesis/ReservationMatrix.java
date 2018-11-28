@@ -12,7 +12,7 @@ public class ReservationMatrix implements AnimatedObject {
 
 	private PVector position;
 	public float size;
-	private Vector<Vector<PVector>> spaceTable;
+	public Vector<Vector<ReservationSection>> spaceTable;
 	public static Map<String, ArrayList<Integer>> spaceTimeTable;
 
 	public ReservationMatrix(Intersection intersection) {
@@ -20,12 +20,12 @@ public class ReservationMatrix implements AnimatedObject {
 		this.size = Lane.laneWidth*10.0f;
 		spaceTimeTable = new Hashtable<String, ArrayList<Integer>>();
 		
-		this.spaceTable = new Vector<Vector<PVector>>();
-		Vector<PVector> currentRow;
+		this.spaceTable = new Vector<Vector<ReservationSection>>();
+		Vector<ReservationSection> currentRow;
 		for (float i = (position.x - (size/2.0f - Globals.pixelsPerFoot*2.5f)); i < position.x + this.size/2.0f; i+=Globals.pixelsPerFoot*5) {
-			currentRow = new Vector<PVector>();
+			currentRow = new Vector<ReservationSection>();
 			for (float j = (position.y - (size/2.0f - Globals.pixelsPerFoot*2.5f)); j < position.y + this.size/2.0f; j+=Globals.pixelsPerFoot*5) {
-				currentRow.addElement(new PVector(i, j));
+				currentRow.addElement(new ReservationSection(new PVector(i, j), Globals.pixelsPerFoot*5));
 				spaceTimeTable.put(currentRow.lastElement().toString(), new ArrayList<Integer>());
 			}
 			spaceTable.addElement(currentRow);
@@ -46,7 +46,7 @@ public class ReservationMatrix implements AnimatedObject {
 		Globals.canvas.rect(this.position.x, this.position.y, this.size, this.size);
 		for (int i = 0; i < spaceTable.size(); i++) {
 			for (int j = 0; j < spaceTable.get(i).size(); j++) {
-				Globals.canvas.rect(spaceTable.get(i).get(j).x, spaceTable.get(i).get(j).y, Globals.pixelsPerFoot*5, Globals.pixelsPerFoot*5);
+				spaceTable.get(i).get(j).render();
 			}
 		}
 	}
@@ -55,6 +55,11 @@ public class ReservationMatrix implements AnimatedObject {
 	public void simulate() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public boolean reserve(Vector<ReservationSection> spaces, long time) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }
