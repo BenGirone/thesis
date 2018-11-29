@@ -1,10 +1,9 @@
 package thesis;
 
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
-
+import java.util.concurrent.Semaphore;
 import processing.core.PApplet;
 import processing.core.PVector;
 
@@ -13,12 +12,18 @@ public class ReservationMatrix implements AnimatedObject {
 	private PVector position;
 	public float size;
 	public Vector<Vector<ReservationSection>> spaceTable;
-	public static Map<String, ArrayList<Integer>> spaceTimeTable;
+	public Map<ReservationSection, Vector<Long>> spaceTimeTable;
+	public Map<Car, Vector<Reservation>> carReservationTable;
+	public Vector<Reservation> reservations;
+	public final Semaphore lock = new Semaphore(1);
 
 	public ReservationMatrix(Intersection intersection) {
 		this.position = intersection.position;
 		this.size = Lane.laneWidth*10.0f;
-		spaceTimeTable = new Hashtable<String, ArrayList<Integer>>();
+		spaceTimeTable = new Hashtable<ReservationSection, Vector<Long>>();
+		carReservationTable = new Hashtable<Car, Vector<Reservation>>();
+		
+		reservations = new Vector<Reservation>();
 		
 		this.spaceTable = new Vector<Vector<ReservationSection>>();
 		Vector<ReservationSection> currentRow;
@@ -26,17 +31,46 @@ public class ReservationMatrix implements AnimatedObject {
 			currentRow = new Vector<ReservationSection>();
 			for (float j = (position.y - (size/2.0f - Globals.pixelsPerFoot*2.5f)); j < position.y + this.size/2.0f; j+=Globals.pixelsPerFoot*5) {
 				currentRow.addElement(new ReservationSection(new PVector(i, j), Globals.pixelsPerFoot*5));
-				spaceTimeTable.put(currentRow.lastElement().toString(), new ArrayList<Integer>());
+				spaceTimeTable.put(currentRow.lastElement(), new Vector<Long>());
 			}
 			spaceTable.addElement(currentRow);
 		}
 	}
 	
-	public boolean reserve(PVector position, long time) {
-		time = time/100;
+	public boolean reserve(Vector<ReservationSection> sections, long t, Car car) {
+		try {
+			lock.acquire();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		
-		return false;
+		Vector<Long> timeReserved;
+		
+		for (ReservationSection section : sections) {
+			
+			timeReserved = spaceTimeTable.get(section);
+			
+			if (timeReserved.contains(t)) {
+				release(car);
+				return false;	
+			}
+			
+			
+			this.reservations.addElement(new Reservation(section, t, car));
+		}
+		
+		lock.release();
+		
+		return true;
 	}
+	
+	public void release(Car car) {
+		for (Reservation reservation : this.reservations) {
+			if (reservation.owner == car)
+				this.reservations.remove(reservation);
+		}
+	}
+	
 
 	@Override
 	public void render() {
@@ -56,10 +90,4 @@ public class ReservationMatrix implements AnimatedObject {
 		// TODO Auto-generated method stub
 		
 	}
-
-	public boolean reserve(Vector<ReservationSection> spaces, long time) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
 }

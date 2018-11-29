@@ -38,9 +38,12 @@ class Car implements AnimatedObject, Collidable {
 	private PVector x_off;
 	private PVector y_off;
 	
+	private PVector phantomPosition;
+	
 	Car(Lane lane) {
 		this.lane = lane;
 		this.position = lane.startPos.copy().sub(lane.directionVector.copy().mult(carLength));
+		this.phantomPosition = this.position;
 		this.velocity = lane.directionVector.copy().mult(lane.speedLimit);
 		this.timeIn = Physics.arrivalTime((((lane.length)/2.0f - lane.parentIntersection.reservationMatrix.size/2.0f) + carLength) - this.distanceTraveled, PVector.dot(velocity, lane.directionVector));
 		this.timeOut = (timeIn + Physics.timeToTravelDistance(lane.parentIntersection.reservationMatrix.size, PVector.dot(velocity, lane.directionVector)));
@@ -51,6 +54,8 @@ class Car implements AnimatedObject, Collidable {
 		y_off = new PVector(0, Math.abs(offset.y));
 		
 		setRank();
+		
+		new CarScheduler(this).start();
 	}
 	
 	private void setRank() {
@@ -91,6 +96,8 @@ class Car implements AnimatedObject, Collidable {
 		if (Time.current() >= timeIn && Time.current() < timeOut)
 			Globals.canvas.fill(255);
 		Globals.canvas.rect(0, 0, carWidth, carLength);
+		Globals.canvas.fill(0);
+		Globals.canvas.text(velocity.mag(), 0, 0);
 		Globals.canvas.popMatrix();
 	}
 
@@ -101,22 +108,32 @@ class Car implements AnimatedObject, Collidable {
 
 	@Override
 	public PVector X1() {
-		return PVector.sub(this.position, x_off);
+		return PVector.sub(phantomPosition, x_off);
 	}
 
 	@Override
 	public PVector X2() {
-		return PVector.add(this.position, x_off);
+		return PVector.add(phantomPosition, x_off);
 	}
 
 	@Override
 	public PVector Y1() {
-		return PVector.sub(this.position, y_off);
+		return PVector.sub(phantomPosition, y_off);
 	}
 
 	@Override
 	public PVector Y2() {
-		return PVector.add(this.position, y_off);
+		return PVector.add(phantomPosition, y_off);
+	}
+
+	public boolean willNeedSection(PVector posAtTime, ReservationSection reservationSection) {
+		phantomPosition = posAtTime;
+		
+		boolean result = isColliding(reservationSection);
+		
+		phantomPosition = position;
+		
+		return result;
 	}
 }
 

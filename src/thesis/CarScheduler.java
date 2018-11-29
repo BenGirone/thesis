@@ -14,13 +14,24 @@ public class CarScheduler extends Thread {
 	public void run() {
 		boolean hasFullReservation = false;
 		
+		float speedChange = 0.0f;
+		
 		Vector<ReservationSection> desiredReservations = new Vector<ReservationSection>(); 
 		
 		while (Time.current() < car.timeIn && !hasFullReservation) {
-			for (long t = car.timeIn; t < car.timeOut; t += 100) {
-				if (!car.lane.parentIntersection.reservationMatrix.reserve(getCarCollisionsAtTime(car.timeIn), car.timeIn)) {
+			hasFullReservation = true;
+			
+			for (long t = car.timeIn; t < car.timeOut; t += 10) {
+				desiredReservations = getCarCollisionsAtTime(t);
+				
+				if (!car.lane.parentIntersection.reservationMatrix.reserve(desiredReservations, t, car)) {
+					hasFullReservation = false;
+					
 					if (Math.abs(PVector.dot(car.velocity, car.lane.directionVector)) > Physics.calcSpeed(3.0f))
+					{
 						car.changeSpeed(-3.0f);
+						speedChange += -3.0f;
+					}
 					else
 						System.err.println("Car is starved!");
 					
@@ -37,7 +48,7 @@ public class CarScheduler extends Thread {
 			}
 		}
 		
-		car.maxspeed = car.lane.speedLimit;
+		car.lane.changeCarSpeed(car, -1 * speedChange);
 	}
 	
 	private Vector<ReservationSection> getCarCollisionsAtTime(long time) {
@@ -46,7 +57,7 @@ public class CarScheduler extends Thread {
 		PVector posAtTime = Physics.positionAtTime(car.position, car.velocity, time);
 		
 		for (int i = 0; i < car.lane.reservationSections.size(); i++) {
-			if (car.isColliding(car.lane.reservationSections.get(i))) {
+			if (car.willNeedSection(posAtTime, car.lane.reservationSections.get(i))) {
 				collisions.addElement(car.lane.reservationSections.get(i));
 			}
 		}

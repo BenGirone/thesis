@@ -4,6 +4,7 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Vector;
+import java.util.concurrent.ThreadLocalRandom;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -26,7 +27,7 @@ class Lane implements AnimatedObject, Collidable{
 	public float speedMinimum;
 	public float length;
 	public boolean initiateTraffic;
-	public Car lastCar;
+	public Car lastCar = null;
 	public PVector startPos;
 	public PVector directionVector;
 	public PVector endPos;
@@ -84,7 +85,7 @@ class Lane implements AnimatedObject, Collidable{
 
 	public void addCar() {
 		PVector newCarSpeed;
-		if (Time.current() > lastCar.timeOut)
+		if (lastCar != null && Time.current() > lastCar.timeOut)
 			newCarSpeed = lastCar.velocity;
 		else
 			newCarSpeed = PVector.mult(directionVector, speedLimit);
@@ -110,14 +111,15 @@ class Lane implements AnimatedObject, Collidable{
 	@Override
 	public void simulate() {
 		if (this.cars.size() == 0 || this.lastCar.isClearFromStart()) {
-			this.addCar();
+			if (ThreadLocalRandom.current().nextInt(1000) <= 10)
+				this.addCar();
 		}
 
 		for (Car car : this.cars) {
 			car.simulate(); 
 		}
 		
-		if (cars.peek().isBeyondIntersection()) {
+		if (cars.size() > 0 && cars.peek().isBeyondIntersection()) {
 			//System.out.println("removing car");
 			this.removeCar();
 		}
