@@ -21,7 +21,7 @@ public class CarScheduler extends Thread {
 		while (Time.current() < car.timeIn && !hasFullReservation) {
 			hasFullReservation = true;
 			
-			for (long t = car.timeIn; t < car.timeOut; t += 10) {
+			for (long t = car.timeIn; t < car.timeOut; t += 100) {
 				desiredReservations = getCarCollisionsAtTime(t);
 				
 				if (!car.lane.parentIntersection.reservationMatrix.reserve(desiredReservations, t, car)) {
@@ -30,7 +30,7 @@ public class CarScheduler extends Thread {
 					if (Math.abs(PVector.dot(car.velocity, car.lane.directionVector)) > Physics.calcSpeed(3.0f))
 					{
 						car.changeSpeed(-3.0f);
-						speedChange += -3.0f;
+						speedChange += 3.0f;
 					}
 					else
 						System.err.println("Car is starved!");
@@ -48,7 +48,7 @@ public class CarScheduler extends Thread {
 			}
 		}
 		
-		car.lane.changeCarSpeed(car, -1 * speedChange);
+		car.lane.changeCarSpeed(car, speedChange);
 	}
 	
 	private Vector<ReservationSection> getCarCollisionsAtTime(long time) {

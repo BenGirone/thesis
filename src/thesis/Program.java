@@ -12,7 +12,7 @@ public class Program extends PApplet {
 	}
 
 	public void settings() {
-		size(Globals.globalHeight, Globals.globalWidth);
+		size(Globals.globalWidth+200, Globals.globalHeight);
 	}
 	
 	public void setup() {
@@ -26,6 +26,9 @@ public class Program extends PApplet {
 
 		intersection.render();
 		intersection.simulate();
+		
+		fill(255);
+		rect(Globals.globalWidth + 100, Globals.globalHeight/2.0f, 200, Globals.globalHeight);
 		
 		text(String.format("X: %d\nY: %d\nt: %d", mouseX, mouseY, Time.current()), mouseX, mouseY);
 		

@@ -93,11 +93,11 @@ class Car implements AnimatedObject, Collidable {
 		Globals.canvas.translate(this.position.x, this.position.y);
 		Globals.canvas.rotate(velocity.heading() + PApplet.HALF_PI);
 		Globals.canvas.fill(219, 29, 29);
-		if (Time.current() >= timeIn && Time.current() < timeOut)
-			Globals.canvas.fill(255);
+		//if (Time.current() >= timeIn && Time.current() < timeOut)
+		//	Globals.canvas.fill(255);
 		Globals.canvas.rect(0, 0, carWidth, carLength);
 		Globals.canvas.fill(0);
-		Globals.canvas.text(velocity.mag(), 0, 0);
+		//Globals.canvas.text(velocity.mag(), 0, 0);
 		Globals.canvas.popMatrix();
 	}
 

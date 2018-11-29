@@ -53,7 +53,7 @@ public class Intersection implements AnimatedObject {
 		laneE.render();
 		laneW.render();
 		
-		reservationMatrix.render();
+		//reservationMatrix.render();
 	}
 
 	@Override

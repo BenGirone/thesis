@@ -79,19 +79,21 @@ class Lane implements AnimatedObject, Collidable{
 				}
 			}
 		}
-		System.out.println(this.reservationSections.size());
+		//System.out.println(this.reservationSections.size());
 		
 	}
 
 	public void addCar() {
-		PVector newCarSpeed;
-		if (lastCar != null && Time.current() > lastCar.timeOut)
-			newCarSpeed = lastCar.velocity;
-		else
-			newCarSpeed = PVector.mult(directionVector, speedLimit);
+		Car newCar = new Car(this);
 		
-		lastCar = new Car(this);
-		lastCar.velocity = newCarSpeed;
+		if (lastCar != null && Time.current() > lastCar.timeOut)
+		{
+			while (newCar.timeOut >= lastCar.timeOut - 1000) {
+				newCar.changeSpeed(-3.0f);
+			}
+		}
+		
+		lastCar = newCar;
 
 		cars.add(lastCar);
 	}
@@ -111,7 +113,7 @@ class Lane implements AnimatedObject, Collidable{
 	@Override
 	public void simulate() {
 		if (this.cars.size() == 0 || this.lastCar.isClearFromStart()) {
-			if (ThreadLocalRandom.current().nextInt(1000) <= 10)
+			if (ThreadLocalRandom.current().nextInt(1000) <= 20)
 				this.addCar();
 		}
 

@@ -8,12 +8,23 @@ import processing.core.PApplet;
 import processing.core.PVector;
 
 public class ReservationMatrix implements AnimatedObject {
+	
+	class ReservationKey {
+		public ReservationSection section;
+		public long time;
 
+		ReservationKey(ReservationSection section, long time) {
+			this.section = section;
+			this.time = time;
+		}
+	}
+	
 	private PVector position;
 	public float size;
 	public Vector<Vector<ReservationSection>> spaceTable;
 	public Map<ReservationSection, Vector<Long>> spaceTimeTable;
-	public Map<Car, Vector<Reservation>> carReservationTable;
+	private Map<Car, Vector<Reservation>> carReservationTable;
+	public Map<ReservationKey, Car> reservationKeyCarTable;
 	public Vector<Reservation> reservations;
 	public final Semaphore lock = new Semaphore(1);
 
@@ -22,6 +33,7 @@ public class ReservationMatrix implements AnimatedObject {
 		this.size = Lane.laneWidth*10.0f;
 		spaceTimeTable = new Hashtable<ReservationSection, Vector<Long>>();
 		carReservationTable = new Hashtable<Car, Vector<Reservation>>();
+		reservationKeyCarTable = new Hashtable<ReservationKey, Car>();
 		
 		reservations = new Vector<Reservation>();
 		
@@ -45,18 +57,27 @@ public class ReservationMatrix implements AnimatedObject {
 		}
 		
 		Vector<Long> timeReserved;
-		
 		for (ReservationSection section : sections) {
 			
 			timeReserved = spaceTimeTable.get(section);
 			
-			if (timeReserved.contains(t)) {
-				release(car);
-				return false;	
+			if (timeReserved.contains(t/100) && reservationKeyCarTable.get(new ReservationKey(section, t/100)) != car) {
+				if (carReservationTable.containsKey(car))
+					release(car);
+				//System.out.println("Reservation taken");
+				lock.release();
+				return false;
 			}
 			
+			Reservation newReservation = new Reservation(section, t/10, car);
 			
-			this.reservations.addElement(new Reservation(section, t, car));
+			if (!carReservationTable.containsKey(car))
+				carReservationTable.put(car, new Vector<Reservation>());
+			
+			carReservationTable.get(car).addElement(newReservation);
+			spaceTimeTable.get(section).addElement(t/100);
+			reservationKeyCarTable.put(new ReservationKey(section, t/100), car);
+			this.reservations.addElement(newReservation);
 		}
 		
 		lock.release();
@@ -65,10 +86,13 @@ public class ReservationMatrix implements AnimatedObject {
 	}
 	
 	public void release(Car car) {
-		for (Reservation reservation : this.reservations) {
-			if (reservation.owner == car)
+		for (Reservation reservation : this.carReservationTable.get(car)) {
 				this.reservations.remove(reservation);
+				spaceTimeTable.get(reservation.section).remove(reservation.time);
+				reservationKeyCarTable.remove(new ReservationKey(reservation.section, reservation.time));
 		}
+		
+		carReservationTable.get(car).clear();
 	}
 	
 
