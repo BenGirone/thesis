@@ -48,7 +48,7 @@ class Lane implements AnimatedObject, Collidable{
 		this.length = length;
 		this.direction = direction;
 		this.cars = new PriorityQueue<Car>(new CarComparator());
-		this.speedLimit = Physics.calcSpeed(35.0f);
+		this.speedLimit = Physics.calcSpeed(55.0f);
 		this.speedMinimum = Physics.calcSpeed(15.0f);
 		this.directionVector = directionCharToVector.get(direction);
 		this.startPos = position.copy().sub(directionVector.copy().mult(length/2.0f));
@@ -86,9 +86,9 @@ class Lane implements AnimatedObject, Collidable{
 	public void addCar() {
 		Car newCar = new Car(this);
 		
-		if (lastCar != null && Time.current() > lastCar.timeOut)
+		if (lastCar != null && Time.current() < lastCar.timeOut)
 		{
-			while (newCar.timeOut >= lastCar.timeOut - 1000) {
+			while (newCar.timeOut <= lastCar.timeOut - 1000) {
 				newCar.changeSpeed(-3.0f);
 			}
 		}

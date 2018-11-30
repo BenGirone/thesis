@@ -14,8 +14,6 @@ public class CarScheduler extends Thread {
 	public void run() {
 		boolean hasFullReservation = false;
 		
-		float speedChange = 0.0f;
-		
 		Vector<ReservationSection> desiredReservations = new Vector<ReservationSection>(); 
 		
 		while (Time.current() < car.timeIn && !hasFullReservation) {
@@ -30,7 +28,6 @@ public class CarScheduler extends Thread {
 					if (Math.abs(PVector.dot(car.velocity, car.lane.directionVector)) > Physics.calcSpeed(3.0f))
 					{
 						car.changeSpeed(-3.0f);
-						speedChange += 3.0f;
 					}
 					else
 						System.err.println("Car is starved!");
@@ -48,7 +45,7 @@ public class CarScheduler extends Thread {
 			}
 		}
 		
-		car.lane.changeCarSpeed(car, speedChange);
+		car.velocity = PVector.mult(car.lane.directionVector, car.lane.speedLimit);
 	}
 	
 	private Vector<ReservationSection> getCarCollisionsAtTime(long time) {
