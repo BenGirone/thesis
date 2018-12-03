@@ -58,9 +58,9 @@ public class Intersection implements AnimatedObject {
 
 	@Override
 	public void simulate() {
-		laneN.simulate();
-		laneS.simulate();
 		laneE.simulate();
 		laneW.simulate();
+		laneN.simulate();
+		laneS.simulate();
 	}
 }

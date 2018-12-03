@@ -8,7 +8,7 @@ public class Globals {
 	public static int globalWidth = 750;
 	public static int globalHeight = 750;
 	public static float pixelsPerFoot = 2.0f;
-	public static float framerate = 30;
+	public static float framerate = 60;
 	
 	public static PVector roundVector(PVector v) {
 		v.x = Math.round(v.x);

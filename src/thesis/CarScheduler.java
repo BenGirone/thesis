@@ -37,6 +37,10 @@ public class CarScheduler extends Thread {
 			}
 		}
 		
+		while(Time.current() < car.timeIn - 3000) {
+			
+		}
+		
 		while(Time.current() < car.timeOut) {
 			try {
 				Thread.sleep(10);
