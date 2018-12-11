@@ -84,7 +84,7 @@ class Lane implements AnimatedObject, Collidable{
 	}
 
 	public void addCar() {
-		Car newCar = new Car(this);
+		Car newCar = new Car(this, lastCar);
 		
 		if (lastCar != null && Time.current() < lastCar.timeOut)
 		{
@@ -113,7 +113,7 @@ class Lane implements AnimatedObject, Collidable{
 	@Override
 	public void simulate() {
 		if (this.cars.size() == 0 || this.lastCar.isClearFromStart()) {
-			if (ThreadLocalRandom.current().nextInt(1000) <= 20)
+			if (ThreadLocalRandom.current().nextInt(1000) <= 60)
 				this.addCar();
 		}
 
@@ -183,5 +183,16 @@ class Lane implements AnimatedObject, Collidable{
 	@Override
 	public PVector Y2() {
 		return PVector.add(position, y_off);
+	}
+
+	public void halt(Car car) {
+		car.velocity = new PVector(0,0);
+		car.isLeadHalted = true;
+		
+		for (Car otherCar : cars) {
+			if (otherCar.rank > car.rank) {
+				otherCar.velocity = new PVector(0,0);
+			}
+		}
 	}
 }

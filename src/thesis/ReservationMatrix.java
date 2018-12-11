@@ -69,7 +69,7 @@ public class ReservationMatrix implements AnimatedObject {
 				return false;
 			}
 			
-			Reservation newReservation = new Reservation(section, t/10, car);
+			Reservation newReservation = new Reservation(section, t/100, car);
 			
 			if (!carReservationTable.containsKey(car))
 				carReservationTable.put(car, new Vector<Reservation>());
@@ -94,7 +94,6 @@ public class ReservationMatrix implements AnimatedObject {
 		
 		carReservationTable.get(car).clear();
 	}
-	
 
 	@Override
 	public void render() {
@@ -113,5 +112,47 @@ public class ReservationMatrix implements AnimatedObject {
 	public void simulate() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public boolean canReserve(Vector<ReservationSection> sections, long t, Car car) {
+		for (ReservationSection section : sections)
+			if (spaceTimeTable.get(section).contains(t/100) && reservationKeyCarTable.get(new ReservationKey(section, t/100)) != car)
+				return false;
+		return true;
+	}
+
+	public boolean fullReserve(Vector<Vector<ReservationSection>> fullList, Vector<Long> desiredTimes, Car car) {
+		try {
+			lock.acquire();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		for (int i = 0; i < fullList.size(); i++) {
+			if (canReserve(fullList.get(i), desiredTimes.get(i), car)) {
+				lock.release();
+				return false;
+			}
+		}
+		
+		if (carReservationTable.containsKey(car))
+			release(car);
+		
+		for (int i = 0; i < fullList.size(); i++) {
+			for (ReservationSection section : fullList.get(i)) {
+				Reservation newReservation = new Reservation(section, desiredTimes.get(i)/100, car);
+				
+				if (!carReservationTable.containsKey(car))
+					carReservationTable.put(car, new Vector<Reservation>());
+				
+				carReservationTable.get(car).addElement(newReservation);
+				spaceTimeTable.get(section).addElement(desiredTimes.get(i)/100);
+				reservationKeyCarTable.put(new ReservationKey(section, desiredTimes.get(i)/100), car);
+				this.reservations.addElement(newReservation);
+			}
+		}
+		
+		lock.release();
+		return true;
 	}
 }

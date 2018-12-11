@@ -40,8 +40,12 @@ class Car implements AnimatedObject, Collidable {
 	
 	private PVector phantomPosition;
 	
-	Car(Lane lane) {
+	public Car carInFront;
+	public boolean isLeadHalted;
+	
+	Car(Lane lane, Car carInFront) {
 		this.lane = lane;
+		this.carInFront = carInFront;
 		this.position = lane.startPos.copy().sub(lane.directionVector.copy().mult(carLength));
 		this.phantomPosition = this.position;
 		this.velocity = lane.directionVector.copy().mult(lane.speedLimit);
@@ -134,6 +138,17 @@ class Car implements AnimatedObject, Collidable {
 		phantomPosition = position;
 		
 		return result;
+	}
+
+	public boolean isHalted() {
+		return velocity == new PVector(0,0);
+	}
+
+	public void changeVelocity(PVector potentialVelocity) {
+		System.out.println("reservation improved");
+		velocity = potentialVelocity;
+		this.timeIn = Physics.arrivalTime((((lane.length)/2.0f - lane.parentIntersection.reservationMatrix.size/2.0f) + carLength) - this.distanceTraveled, PVector.dot(velocity, lane.directionVector));
+		this.timeOut = (timeIn + Physics.timeToTravelDistance(lane.parentIntersection.reservationMatrix.size, PVector.dot(velocity, lane.directionVector)));
 	}
 }
 
